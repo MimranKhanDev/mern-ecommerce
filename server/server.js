@@ -1,7 +1,7 @@
 // server/server.js
 import app from "./app.js";
 import mongoose from "mongoose";
-import databaseConnection from "./src/config/database.js";
+import connectDB from "./src/config/database.js";
 
 const PORT = process.env.PORT || 5000;
 const NODE_ENV = process.env.NODE_ENV || "development";
@@ -12,6 +12,11 @@ let isShuttingDown = false;
 const gracefulShutdown = async (signal) => {
   if (isShuttingDown) return;
   isShuttingDown = true;
+  const forceExitTimer = setTimeout(() => {
+    console.error("⚠️  Forced exit after 10s timeout");
+    process.exit(1);
+  }, 10_000);
+  forceExitTimer.unref();
   console.log(
     `\n⚠️  ${signal} signal received: Closing HTTP server & Database connections...`,
   );
@@ -37,7 +42,7 @@ const gracefulShutdown = async (signal) => {
 
 const startServer = async () => {
   try {
-    await databaseConnection();
+    await connectDB();
     server = app.listen(PORT, () => {
       const url = `http://localhost:${PORT}`;
       console.log(`🚀 Server running in ${NODE_ENV} mode on port ${PORT}`);
@@ -49,7 +54,7 @@ const startServer = async () => {
     process.on("SIGINT", () => gracefulShutdown("SIGINT"));
     process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
   } catch (error) {
-    console.error("Failed to start server due to DB connection failure.");
+    console.error(`Failed to start server due to ${error.message} failure.`);
     process.exit(1); // Controlled termination at the app entry level
   }
 };

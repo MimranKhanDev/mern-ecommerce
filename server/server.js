@@ -1,4 +1,3 @@
-// server/server.js
 import app from "./app.js";
 import mongoose from "mongoose";
 import connectDB from "./src/config/database.js";
@@ -20,6 +19,7 @@ const gracefulShutdown = async (signal) => {
   console.log(
     `\n⚠️  ${signal} signal received: Closing HTTP server & Database connections...`,
   );
+
   if (!server) {
     process.exit(0);
   }
@@ -55,7 +55,7 @@ const startServer = async () => {
     process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
   } catch (error) {
     console.error(`Failed to start server due to ${error.message} failure.`);
-    process.exit(1); // Controlled termination at the app entry level
+    process.exit(1);
   }
 };
 

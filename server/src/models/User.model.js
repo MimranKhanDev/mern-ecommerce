@@ -2,7 +2,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
-// Address subdocument schema
 const addressSchema = new mongoose.Schema({
   label: {
     type: String,
@@ -62,7 +61,7 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: true,
-      unique: true, // unique: true already creates an index.
+      unique: true,
       lowercase: true,
       trim: true,
       match: [
@@ -105,20 +104,14 @@ const userSchema = new mongoose.Schema(
   },
 );
 
-// Do NOT add userSchema.index({ email: 1 }).
-// `unique: true` on the email field already creates the index.
-
 // Hash password before saving, only if it was modified.
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) {
     return;
   }
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+  this.password = await bcrypt.hash(this.password, 10);
 });
 
-// Instance method: compare candidate password with stored hash.
-// Returns a Promise<boolean> because bcrypt comparison is async.
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
